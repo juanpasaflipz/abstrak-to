@@ -8,7 +8,7 @@ async function executeTransactionHandler(
 ): Promise<Response> {
   try {
     const body = await request.json();
-    const validatedData: ExecuteTransactionRequest = validateRequest(executeTransactionRequestSchema, body);
+    const validatedData = validateRequest(executeTransactionRequestSchema, body);
 
     const { userAddress, to, value, data, sessionId, gasLimit } = validatedData;
 

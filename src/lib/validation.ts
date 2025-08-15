@@ -35,8 +35,8 @@ export const createSessionRequestSchema = z.object({
 export const executeTransactionRequestSchema = z.object({
   userAddress: addressSchema,
   to: addressSchema,
-  value: weiAmountSchema.optional().default('0'),
-  data: z.string().regex(/^0x[a-fA-F0-9]*$/, 'Invalid hex data').optional().default('0x'),
+  value: weiAmountSchema.default('0'),
+  data: z.string().regex(/^0x[a-fA-F0-9]*$/, 'Invalid hex data').default('0x'),
   sessionId: z.string().optional(),
   gasLimit: z.number().int().positive().optional(),
 });
@@ -46,8 +46,8 @@ export const executeBatchRequestSchema = z.object({
   userAddress: addressSchema,
   transactions: z.array(z.object({
     to: addressSchema,
-    value: weiAmountSchema.optional().default('0'),
-    data: z.string().regex(/^0x[a-fA-F0-9]*$/, 'Invalid hex data').optional().default('0x'),
+    value: weiAmountSchema.default('0'),
+    data: z.string().regex(/^0x[a-fA-F0-9]*$/, 'Invalid hex data').default('0x'),
   })).min(1).max(10), // Limit batch size
   sessionId: z.string().optional(),
 });

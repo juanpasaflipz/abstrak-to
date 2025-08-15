@@ -8,7 +8,7 @@ async function executeBatchHandler(
 ): Promise<Response> {
   try {
     const body = await request.json();
-    const validatedData: ExecuteBatchRequest = validateRequest(executeBatchRequestSchema, body);
+    const validatedData = validateRequest(executeBatchRequestSchema, body);
 
     const { userAddress, transactions, sessionId } = validatedData;
 
@@ -27,8 +27,8 @@ async function executeBatchHandler(
       index,
       hash: '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
       to: tx.to,
-      value: tx.value || '0',
-      data: tx.data || '0x',
+      value: tx.value ?? '0',
+      data: tx.data ?? '0x',
       status: 'success' as const,
       gasUsed: '21000',
     }));
@@ -42,7 +42,7 @@ async function executeBatchHandler(
       successfulTransactions: transactionResults.filter(tx => tx.status === 'success').length,
       failedTransactions: transactionResults.filter(tx => tx.status !== 'success').length,
       totalGasUsed,
-      totalValue: transactions.reduce((sum, tx) => sum + BigInt(tx.value || '0'), BigInt(0)).toString(),
+      totalValue: transactions.reduce((sum, tx) => sum + BigInt(tx.value ?? '0'), BigInt(0)).toString(),
       transactions: transactionResults,
       sponsored: true,
       timestamp: Date.now(),

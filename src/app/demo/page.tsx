@@ -5,6 +5,7 @@ import { useAccount } from 'wagmi';
 import { ConnectCard } from '@/components/ConnectCard';
 import { SessionBadge } from '@/components/SessionBadge';
 import { TxButton } from '@/components/TxButton';
+import { Navigation } from '@/components/portal/Navigation';
 import { CONTRACT_INFO, getContractAddress, type ContractName } from '@/lib/contracts';
 
 export default function DemoPage() {
@@ -24,6 +25,7 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Navigation />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">

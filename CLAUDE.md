@@ -133,3 +133,4 @@ Counter contract example at `contracts/Counter.sol`:
 - **Component Props**: Define interfaces for all component props
 - **Constants**: Chain IDs and addresses should be environment-driven
 - memory
+- m

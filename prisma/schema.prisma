@@ -1,0 +1,278 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User accounts (connected via wallet)
+model User {
+  id       String @id @default(cuid())
+  address  String @unique
+  email    String?
+  name     String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  projects Project[]
+  apiKeys  ApiKey[]
+  
+  @@map("users")
+}
+
+// Developer projects (multi-tenant)
+model Project {
+  id          String @id @default(cuid())
+  name        String
+  description String?
+  ownerId     String
+  
+  // Default configurations
+  defaultChainId   Int    @default(84532) // Base Sepolia
+  defaultProvider  String @default("safe") // safe, alchemy, biconomy
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  owner           User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  environments    Environment[]
+  apiKeys         ApiKey[]
+  providerConfigs ProviderConfig[]
+  gasPolicies     GasPolicy[]
+  sessionPolicies SessionPolicy[]
+  spendingLimits  SpendingLimit[]
+  activityLogs    ActivityLog[]
+  webhooks        Webhook[]
+  
+  @@map("projects")
+}
+
+// Project environments (dev/prod)
+model Environment {
+  id        String @id @default(cuid())
+  name      String // "development", "production"
+  projectId String
+  
+  // Configuration
+  chainId  Int
+  provider String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  project Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  apiKeys ApiKey[]
+  
+  @@unique([projectId, name])
+  @@map("environments")
+}
+
+// API keys for authentication
+model ApiKey {
+  id            String   @id @default(cuid())
+  name          String
+  keyHash       String   @unique // hashed version
+  keyPrefix     String   // first few chars for display (ak_test_...)
+  
+  projectId     String
+  environmentId String
+  userId        String
+  
+  // Permissions
+  scopes        Json // ["read", "write", "simulate"]
+  
+  // Restrictions
+  allowedDomains Json // domain allowlist
+  allowedIPs     Json // IP allowlist
+  
+  // Usage
+  lastUsedAt DateTime?
+  usageCount Int       @default(0)
+  rateLimit  Int       @default(100) // requests per minute
+  
+  isActive  Boolean  @default(true)
+  expiresAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  environment Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("api_keys")
+}
+
+// Provider configurations (Safe, Alchemy, Biconomy)
+model ProviderConfig {
+  id        String @id @default(cuid())
+  projectId String
+  provider  String // "safe", "alchemy", "biconomy"
+  chainId   Int
+  
+  // Provider-specific settings
+  apiKey     String?
+  policyId   String? // for Alchemy gas policy
+  
+  // Capabilities
+  supportsGasSponsorship Boolean @default(false)
+  supportsSessionKeys    Boolean @default(false)
+  supportsSpendingLimits Boolean @default(false)
+  supportsBatchTx        Boolean @default(false)
+  
+  isActive  Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, provider, chainId])
+  @@map("provider_configs")
+}
+
+// Gas sponsorship policies
+model GasPolicy {
+  id        String @id @default(cuid())
+  projectId String
+  name      String
+  
+  // Policy configuration
+  mode         String // "sponsor_all", "allowlist", "user_pays"
+  dailyBudget  String // in wei
+  perTxLimit   String // in wei
+  
+  // Allowlists (for allowlist mode)
+  allowedMethods   Json // method signatures
+  allowedContracts Json // contract addresses
+  
+  isActive  Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@map("gas_policies")
+}
+
+// Session key policies
+model SessionPolicy {
+  id        String @id @default(cuid())
+  projectId String
+  name      String
+  
+  // Session configuration
+  defaultTTL       Int      @default(1800) // 30 minutes in seconds
+  maxValue         String   // max value per transaction (wei)
+  allowedContracts Json // contract addresses
+  allowedMethods   Json // method signatures/selectors
+  
+  // Daily limits
+  dailyCap String // daily spending cap (wei)
+  
+  isActive  Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@map("session_policies")
+}
+
+// Spending limits (project and user level)
+model SpendingLimit {
+  id        String @id @default(cuid())
+  projectId String
+  
+  // Limit type
+  type        String // "project", "user_session"
+  
+  // Limit configuration
+  dailyLimit  String // in wei
+  monthlyLimit String? // in wei
+  
+  // Current usage (reset daily/monthly)
+  dailySpent    String   @default("0")
+  monthlySpent  String   @default("0")
+  lastDailyReset DateTime @default(now())
+  lastMonthlyReset DateTime @default(now())
+  
+  isActive  Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@map("spending_limits")
+}
+
+// Activity logs for monitoring
+model ActivityLog {
+  id        String @id @default(cuid())
+  projectId String
+  
+  // Event details
+  event     String // "account.created", "session.created", "transaction.submitted", etc.
+  endpoint  String // API endpoint called
+  method    String // HTTP method
+  
+  // Request details
+  userAddress String?
+  apiKeyId    String?
+  
+  // Response details
+  statusCode  Int
+  responseTime Int? // milliseconds
+  
+  // Metadata
+  metadata Json? // additional event-specific data
+  
+  createdAt DateTime @default(now())
+  
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@map("activity_logs")
+}
+
+// Webhook configurations
+model Webhook {
+  id        String @id @default(cuid())
+  projectId String
+  
+  // Webhook configuration
+  url         String
+  secret      String // for HMAC signature
+  events      Json // events to subscribe to
+  
+  // Retry configuration
+  maxRetries  Int @default(3)
+  retryDelay  Int @default(1000) // milliseconds
+  
+  // Status
+  isActive    Boolean @default(true)
+  lastSuccess DateTime?
+  lastFailure DateTime?
+  failureCount Int @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@map("webhooks")
+}

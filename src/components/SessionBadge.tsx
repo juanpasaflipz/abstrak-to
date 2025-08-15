@@ -2,7 +2,7 @@
 
 import { useAccount } from 'wagmi';
 import { useState, useEffect } from 'react';
-import { getActiveSession, revokeSession } from '@/lib/sessionKeys';
+import { getActiveSession, revokeSession, createSessionKey } from '@/lib/sessionKeys';
 
 export function SessionBadge() {
   const { address } = useAccount();
@@ -47,13 +47,43 @@ export function SessionBadge() {
     );
   }
 
+  const handleCreateSession = async () => {
+    if (!address) return;
+    
+    setIsLoading(true);
+    try {
+      const sessionPrivateKey = await createSessionKey(address);
+      
+      if (sessionPrivateKey) {
+        // Refresh session status after creation
+        checkSessionStatus();
+        console.log('Session created successfully');
+      }
+    } catch (error) {
+      console.error('Failed to create session:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!session) {
     return (
       <div className="p-3 bg-yellow-50 rounded-lg">
-        <p className="text-sm text-yellow-700">No active session</p>
-        <p className="text-xs text-yellow-600 mt-1">
-          Create a session to enable one-click actions
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-yellow-700">No active session</p>
+            <p className="text-xs text-yellow-600 mt-1">
+              Create a session to enable one-click actions
+            </p>
+          </div>
+          <button
+            onClick={handleCreateSession}
+            disabled={isLoading}
+            className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? 'Creating...' : 'Create Session'}
+          </button>
+        </div>
       </div>
     );
   }

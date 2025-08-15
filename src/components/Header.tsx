@@ -6,11 +6,11 @@ import { useState } from 'react';
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const navItems = [
+    const navItems = [
     { label: 'Features', href: '#features' },
-    { label: 'Testimonials', href: '#testimonials' },
+    { label: 'API Playground', href: '/playground' },
+    { label: 'Demo', href: '/demo' },
     { label: 'Pricing', href: '#pricing' },
-    { label: 'Contact', href: '#contact' },
   ];
 
   return (

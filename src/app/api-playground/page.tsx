@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Navigation } from '@/components/portal/Navigation';
 
 interface ApiEndpoint {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -8,14 +9,17 @@ interface ApiEndpoint {
   description: string;
   requestBody?: any;
   headers?: Record<string, string>;
+  category: 'Account' | 'Session' | 'Transaction' | 'Utility';
 }
 
 const API_ENDPOINTS: ApiEndpoint[] = [
+  // Account Management
   {
     method: 'POST',
     path: '/api/aa/account/create',
     description: 'Create a new smart account',
-    headers: { 'Authorization': 'Bearer ak_test_1234567890abcdef' },
+    category: 'Account',
+    headers: { 'Content-Type': 'application/json' },
     requestBody: {
       ownerAddress: '0x1234567890123456789012345678901234567890',
       chainId: 84532,
@@ -25,32 +29,53 @@ const API_ENDPOINTS: ApiEndpoint[] = [
   {
     method: 'GET',
     path: '/api/aa/account/0x1234567890123456789012345678901234567890',
-    description: 'Get smart account details',
-    headers: { 'Authorization': 'Bearer ak_test_1234567890abcdef' }
+    description: 'Get smart account details by address',
+    category: 'Account',
+    headers: { 'Content-Type': 'application/json' }
   },
   {
     method: 'POST',
-    path: '/api/aa/session/create',
-    description: 'Create a new session key',
-    headers: { 'Authorization': 'Bearer ak_test_1234567890abcdef' },
+    path: '/api/aa/account/deploy',
+    description: 'Deploy a smart account to the blockchain',
+    category: 'Account',
+    headers: { 'Content-Type': 'application/json' },
     requestBody: {
-      userAddress: '0x1234567890123456789012345678901234567890',
-      spendingLimit: '1000000000000000000',
-      duration: 3600000,
-      allowedTargets: ['0x742d35Cc6434C0532925a3b8c5481a3d3E7Cc4A7']
+      accountAddress: '0x1234567890123456789012345678901234567890',
+      chainId: 84532,
+      provider: 'safe'
     }
+  },
+  
+  // Session Management
+  {
+    method: 'GET',
+    path: '/api/aa/sessions/by-address/0x1234567890123456789012345678901234567890',
+    description: 'Get active sessions for an address',
+    category: 'Session',
+    headers: { 'Content-Type': 'application/json' }
   },
   {
     method: 'GET',
-    path: '/api/aa/session/0x1234567890123456789012345678901234567890',
-    description: 'Get active sessions for address',
-    headers: { 'Authorization': 'Bearer ak_test_1234567890abcdef' }
+    path: '/api/aa/sessions/550e8400-e29b-41d4-a716-446655440000',
+    description: 'Get session details by session ID',
+    category: 'Session',
+    headers: { 'Content-Type': 'application/json' }
   },
+  {
+    method: 'DELETE',
+    path: '/api/aa/sessions/550e8400-e29b-41d4-a716-446655440000/revoke',
+    description: 'Revoke a session key',
+    category: 'Session',
+    headers: { 'Content-Type': 'application/json' }
+  },
+  
+  // Transaction Management
   {
     method: 'POST',
     path: '/api/aa/transaction/execute',
-    description: 'Execute a gasless transaction',
-    headers: { 'Authorization': 'Bearer ak_test_1234567890abcdef' },
+    description: 'Execute a single gasless transaction',
+    category: 'Transaction',
+    headers: { 'Content-Type': 'application/json' },
     requestBody: {
       userAddress: '0x1234567890123456789012345678901234567890',
       to: '0x742d35Cc6434C0532925a3b8c5481a3d3E7Cc4A7',
@@ -59,10 +84,28 @@ const API_ENDPOINTS: ApiEndpoint[] = [
     }
   },
   {
+    method: 'POST',
+    path: '/api/aa/transaction/batch',
+    description: 'Execute multiple transactions in a batch',
+    category: 'Transaction',
+    headers: { 'Content-Type': 'application/json' },
+    requestBody: {
+      userAddress: '0x1234567890123456789012345678901234567890',
+      transactions: [
+        {
+          to: '0x742d35Cc6434C0532925a3b8c5481a3d3E7Cc4A7',
+          data: '0xd09de08a',
+          value: '0'
+        }
+      ]
+    }
+  },
+  {
     method: 'GET',
     path: '/api/aa/transaction/0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12',
-    description: 'Get transaction details',
-    headers: { 'Authorization': 'Bearer ak_test_1234567890abcdef' }
+    description: 'Get transaction details by hash',
+    category: 'Transaction',
+    headers: { 'Content-Type': 'application/json' }
   }
 ];
 
@@ -76,17 +119,56 @@ export default function ApiPlaygroundPage() {
   const [headers, setHeaders] = useState<string>(
     JSON.stringify(selectedEndpoint.headers || {}, null, 2)
   );
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [responseTime, setResponseTime] = useState<number>(0);
+  const [responseSize, setResponseSize] = useState<number>(0);
+
+  const categories = ['All', ...Array.from(new Set(API_ENDPOINTS.map(ep => ep.category)))];
+
+  const filteredEndpoints = selectedCategory === 'All' 
+    ? API_ENDPOINTS 
+    : API_ENDPOINTS.filter(ep => ep.category === selectedCategory);
+
+  useEffect(() => {
+    handleEndpointChange(selectedEndpoint);
+  }, [selectedEndpoint]);
 
   const handleEndpointChange = (endpoint: ApiEndpoint) => {
     setSelectedEndpoint(endpoint);
     setRequestBody(JSON.stringify(endpoint.requestBody || {}, null, 2));
     setHeaders(JSON.stringify(endpoint.headers || {}, null, 2));
     setResponse('');
+    setResponseTime(0);
+    setResponseSize(0);
+  };
+
+  const validateJson = (jsonString: string): boolean => {
+    try {
+      JSON.parse(jsonString);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const executeRequest = async () => {
+    // Validate JSON inputs
+    if (!validateJson(headers)) {
+      setResponse('Error: Invalid JSON in headers');
+      return;
+    }
+    
+    if (selectedEndpoint.method !== 'GET' && !validateJson(requestBody)) {
+      setResponse('Error: Invalid JSON in request body');
+      return;
+    }
+
     setIsLoading(true);
     setResponse('');
+    setResponseTime(0);
+    setResponseSize(0);
+
+    const startTime = Date.now();
 
     try {
       const parsedHeaders = JSON.parse(headers);
@@ -103,19 +185,41 @@ export default function ApiPlaygroundPage() {
       }
 
       const fullUrl = `${window.location.origin}${selectedEndpoint.path}`;
+      console.log('Executing request:', { url: fullUrl, options });
+      
       const res = await fetch(fullUrl, options);
+      const endTime = Date.now();
+      const responseTimeMs = endTime - startTime;
       
       const responseText = await res.text();
+      const responseSizeBytes = new Blob([responseText]).size;
+      
       let formattedResponse;
+      let isJson = false;
 
       try {
         const jsonResponse = JSON.parse(responseText);
         formattedResponse = JSON.stringify(jsonResponse, null, 2);
+        isJson = true;
       } catch {
         formattedResponse = responseText;
       }
 
-      setResponse(`Status: ${res.status} ${res.statusText}\n\n${formattedResponse}`);
+      // Format the response with metadata
+      const responseMeta = [
+        `Status: ${res.status} ${res.statusText}`,
+        `Response Time: ${responseTimeMs}ms`,
+        `Response Size: ${(responseSizeBytes / 1024).toFixed(2)} KB`,
+        `Content-Type: ${res.headers.get('content-type') || 'text/plain'}`,
+        `Date: ${new Date().toISOString()}`,
+        '',
+        isJson ? 'Response Body (JSON):' : 'Response Body:',
+        formattedResponse
+      ].join('\n');
+
+      setResponse(responseMeta);
+      setResponseTime(responseTimeMs);
+      setResponseSize(responseSizeBytes);
     } catch (error) {
       setResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
@@ -123,17 +227,26 @@ export default function ApiPlaygroundPage() {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const formatEndpointPath = (path: string) => {
+    return path.replace(/\/api\/aa\//, '');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Navigation temporarily removed for debugging */}
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             🚀 API Playground
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Test the Account Abstraction API endpoints interactively. 
-            Try different requests and see real responses.
+            Explore smart account creation, session management, and gasless transactions.
           </p>
         </div>
 
@@ -146,8 +259,24 @@ export default function ApiPlaygroundPage() {
                 📡 Available Endpoints
               </h2>
               
-              <div className="space-y-2">
-                {API_ENDPOINTS.map((endpoint, index) => (
+              {/* Category Filter */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Filter by Category
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                >
+                  {categories.map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {filteredEndpoints.map((endpoint, index) => (
                   <button
                     key={index}
                     onClick={() => handleEndpointChange(endpoint)}
@@ -166,10 +295,13 @@ export default function ApiPlaygroundPage() {
                       }`}>
                         {endpoint.method}
                       </span>
-                      <code className="text-sm text-gray-600">
-                        {endpoint.path}
-                      </code>
+                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
+                        {endpoint.category}
+                      </span>
                     </div>
+                    <code className="block text-xs text-gray-600 mb-2 break-all">
+                      {formatEndpointPath(endpoint.path)}
+                    </code>
                     <p className="text-sm text-gray-500">
                       {endpoint.description}
                     </p>
@@ -183,26 +315,23 @@ export default function ApiPlaygroundPage() {
                   🔑 Authentication
                 </h3>
                 <p className="text-sm text-gray-600 mb-2">
-                  Include your API key in the Authorization header:
+                  Most endpoints require authentication. Include your API key in headers if needed.
                 </p>
-                <code className="block text-xs bg-gray-800 text-green-400 p-2 rounded">
-                  Authorization: Bearer ak_test_1234567890abcdef
-                </code>
                 
                 <h3 className="font-semibold text-gray-900 mb-2 mt-4">
-                  📋 Test API Keys
+                  📋 Test Data
                 </h3>
                 <div className="space-y-1 text-xs">
                   <div>
-                    <strong>Test User:</strong>
-                    <code className="block bg-gray-800 text-green-400 p-1 rounded mt-1">
-                      ak_test_1234567890abcdef
+                    <strong>Test Address:</strong>
+                    <code className="block bg-gray-800 text-green-400 p-1 rounded mt-1 break-all">
+                      0x1234567890123456789012345678901234567890
                     </code>
                   </div>
                   <div>
-                    <strong>Demo User:</strong>
-                    <code className="block bg-gray-800 text-green-400 p-1 rounded mt-1">
-                      ak_demo_abcdef1234567890
+                    <strong>Test Contract:</strong>
+                    <code className="block bg-gray-800 text-green-400 p-1 rounded mt-1 break-all">
+                      0x742d35Cc6434C0532925a3b8c5481a3d3E7Cc4A7
                     </code>
                   </div>
                 </div>
@@ -226,10 +355,13 @@ export default function ApiPlaygroundPage() {
                   }`}>
                     {selectedEndpoint.method}
                   </span>
-                  <code className="text-sm text-gray-700">
-                    {selectedEndpoint.path}
-                  </code>
+                  <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
+                    {selectedEndpoint.category}
+                  </span>
                 </div>
+                <code className="block text-sm text-gray-700 mb-2 break-all">
+                  {selectedEndpoint.path}
+                </code>
                 <p className="text-sm text-gray-600">
                   {selectedEndpoint.description}
                 </p>
@@ -237,38 +369,64 @@ export default function ApiPlaygroundPage() {
 
               {/* Headers */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Headers
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Headers
+                  </label>
+                  <button
+                    onClick={() => copyToClipboard(headers)}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    📋 Copy
+                  </button>
+                </div>
                 <textarea
                   value={headers}
                   onChange={(e) => setHeaders(e.target.value)}
                   className="w-full h-24 p-3 border border-gray-300 rounded-lg font-mono text-sm"
                   placeholder="Enter headers as JSON"
                 />
+                {!validateJson(headers) && headers.trim() && (
+                  <p className="text-red-500 text-xs mt-1">Invalid JSON format</p>
+                )}
               </div>
 
               {/* Request Body */}
               {selectedEndpoint.method !== 'GET' && (
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Request Body
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Request Body
+                    </label>
+                    <button
+                      onClick={() => copyToClipboard(requestBody)}
+                      className="text-xs text-blue-600 hover:text-blue-800"
+                    >
+                      📋 Copy
+                    </button>
+                  </div>
                   <textarea
                     value={requestBody}
                     onChange={(e) => setRequestBody(e.target.value)}
                     className="w-full h-48 p-3 border border-gray-300 rounded-lg font-mono text-sm"
                     placeholder="Enter request body as JSON"
                   />
+                  {!validateJson(requestBody) && requestBody.trim() && (
+                    <p className="text-red-500 text-xs mt-1">Invalid JSON format</p>
+                  )}
                 </div>
               )}
 
               {/* Execute Button */}
               <button
                 onClick={executeRequest}
-                disabled={isLoading}
+                disabled={isLoading || 
+                  !validateJson(headers) || 
+                  (selectedEndpoint.method !== 'GET' && !validateJson(requestBody))}
                 className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors ${
-                  isLoading
+                  isLoading || 
+                  !validateJson(headers) || 
+                  (selectedEndpoint.method !== 'GET' && !validateJson(requestBody))
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-blue-600 hover:bg-blue-700'
                 } text-white`}
@@ -291,8 +449,25 @@ export default function ApiPlaygroundPage() {
               </h2>
 
               {response ? (
-                <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm overflow-auto max-h-96">
-                  <pre>{response}</pre>
+                <div className="space-y-4">
+                  {/* Response Metadata */}
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <span>⏱️ {responseTime}ms</span>
+                    <span>📦 {(responseSize / 1024).toFixed(2)} KB</span>
+                  </div>
+                  
+                  {/* Response Content */}
+                  <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm overflow-auto max-h-80">
+                    <pre className="whitespace-pre-wrap">{response}</pre>
+                  </div>
+                  
+                  {/* Copy Response Button */}
+                  <button
+                    onClick={() => copyToClipboard(response)}
+                    className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                  >
+                    📋 Copy Response
+                  </button>
                 </div>
               ) : (
                 <div className="text-center py-12 text-gray-500">
@@ -307,16 +482,16 @@ export default function ApiPlaygroundPage() {
                   💡 Response Information
                 </h3>
                 <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• All responses include success/error status</li>
-                  <li>• Timestamps are in ISO format</li>
-                  <li>• Rate limits are enforced (check headers)</li>
-                  <li>• Errors include detailed error codes</li>
+                  <li>• Response time and size are displayed</li>
+                  <li>• All responses include HTTP status codes</li>
+                  <li>• JSON responses are automatically formatted</li>
+                  <li>• Copy response button for easy sharing</li>
                 </ul>
               </div>
             </div>
           </div>
 
-          {/* Bottom Section - Examples */}
+          {/* Bottom Section - Examples and Documentation */}
           <div className="mt-12 bg-white rounded-lg shadow-md p-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">
               📚 Common Usage Examples
@@ -340,13 +515,13 @@ export default function ApiPlaygroundPage() {
 
               <div className="p-4 border border-gray-200 rounded-lg">
                 <h3 className="font-semibold text-gray-900 mb-2">
-                  2. Create Session
+                  2. Execute Transaction
                 </h3>
                 <p className="text-sm text-gray-600 mb-3">
-                  Set up a session key for gasless transactions with spending limits.
+                  Send a gasless transaction using the smart account.
                 </p>
                 <button
-                  onClick={() => handleEndpointChange(API_ENDPOINTS[2])}
+                  onClick={() => handleEndpointChange(API_ENDPOINTS[4])}
                   className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                 >
                   Try Example →
@@ -355,13 +530,13 @@ export default function ApiPlaygroundPage() {
 
               <div className="p-4 border border-gray-200 rounded-lg">
                 <h3 className="font-semibold text-gray-900 mb-2">
-                  3. Execute Transaction
+                  3. Batch Transactions
                 </h3>
                 <p className="text-sm text-gray-600 mb-3">
-                  Send a gasless transaction using a session key.
+                  Execute multiple transactions in a single batch for efficiency.
                 </p>
                 <button
-                  onClick={() => handleEndpointChange(API_ENDPOINTS[4])}
+                  onClick={() => handleEndpointChange(API_ENDPOINTS[5])}
                   className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                 >
                   Try Example →
