@@ -5,13 +5,27 @@ import { useState } from 'react';
 import { executeOneClickAction } from '@/app/actions/oneClick';
 import { getActiveSession } from '@/lib/sessionKeys';
 
+import { CONTRACT_CALLS, CONTRACT_INFO, type ContractCall } from '@/lib/contracts';
+
 interface TxButtonProps {
-  action: 'mint' | 'increment';
+  action: ContractCall;
   label: string;
   className?: string;
 }
 
 export function TxButton({ action, label, className = '' }: TxButtonProps) {
+  // Validate that the action exists in CONTRACT_CALLS
+  if (!CONTRACT_CALLS[action]) {
+    console.error(`Invalid action: ${action}. Valid actions are:`, Object.keys(CONTRACT_CALLS));
+    return (
+      <div className={`${className} p-4 border border-red-200 bg-red-50 rounded-lg`}>
+        <p className="text-red-700 text-sm">
+          Invalid action: {action}. Please check the component configuration.
+        </p>
+      </div>
+    );
+  }
+
   const { address } = useAccount();
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<{
@@ -72,14 +86,16 @@ export function TxButton({ action, label, className = '' }: TxButtonProps) {
 
   const getButtonColor = () => {
     if (isLoading) return 'bg-gray-400 cursor-not-allowed';
-    if (action === 'mint') return 'bg-purple-600 hover:bg-purple-700';
-    if (action === 'increment') return 'bg-green-600 hover:bg-green-700';
+    if (action === 'mintTokens') return 'bg-purple-600 hover:bg-purple-700';
+    if (action === 'mintNFT') return 'bg-pink-600 hover:bg-pink-700';
+    if (action === 'incrementCounter') return 'bg-green-600 hover:bg-green-700';
     return 'bg-blue-600 hover:bg-blue-700';
   };
 
   const getActionIcon = () => {
-    if (action === 'mint') return '🎨';
-    if (action === 'increment') return '🔢';
+    if (action === 'mintTokens') return '🪙';
+    if (action === 'mintNFT') return '🎨';
+    if (action === 'incrementCounter') return '🔢';
     return '⚡';
   };
 
@@ -135,8 +151,7 @@ export function TxButton({ action, label, className = '' }: TxButtonProps) {
       )}
 
       <div className="mt-2 text-xs text-gray-500 text-center">
-        {action === 'mint' && 'Mints a test NFT using your session key'}
-        {action === 'increment' && 'Increments a counter using your session key'}
+        {CONTRACT_CALLS[action]?.description || 'Action description not available'}
       </div>
     </div>
   );

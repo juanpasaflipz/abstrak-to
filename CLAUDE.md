@@ -132,3 +132,4 @@ Counter contract example at `contracts/Counter.sol`:
 - **Error Handling**: Wrap external calls in try-catch with descriptive error messages
 - **Component Props**: Define interfaces for all component props
 - **Constants**: Chain IDs and addresses should be environment-driven
+- memory

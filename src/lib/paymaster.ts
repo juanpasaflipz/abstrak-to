@@ -16,7 +16,9 @@ import {
 } from '@/lib/aa/biconomy';
 
 export interface TransactionRequest {
-  action: string;
+  to: string;
+  data: string;
+  value: string;
   sessionKey: string;
   userAddress: string;
   provider?: 'safe' | 'alchemy' | 'biconomy';

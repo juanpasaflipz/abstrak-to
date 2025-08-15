@@ -3,17 +3,24 @@
 import { createSessionKey } from '@/lib/sessionKeys';
 import { executeTransaction } from '@/lib/paymaster';
 
+import { CONTRACT_CALLS, type ContractCall } from '@/lib/contracts';
+
 export async function executeOneClickAction(
-  action: 'mint' | 'increment',
+  action: ContractCall,
   userAddress: string
 ) {
   try {
     // Generate a new session key for this transaction
     const sessionKey = await createSessionKey(userAddress);
     
+    // Get contract call details
+    const contractCall = CONTRACT_CALLS[action];
+    
     // Execute the transaction with gas sponsorship
     const result = await executeTransaction({
-      action,
+      to: contractCall.to(),
+      data: contractCall.data,
+      value: contractCall.value,
       sessionKey,
       userAddress,
       provider: 'safe', // Default to Safe

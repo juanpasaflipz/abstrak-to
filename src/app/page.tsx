@@ -116,12 +116,12 @@ export default function Home() {
                   
                   <div className="mt-6 space-y-3">
                     <TxButton 
-                      action="mint" 
+                      action="mintNFT" 
                       label="Mint Test NFT"
                       className="w-full"
                     />
                     <TxButton 
-                      action="increment" 
+                      action="incrementCounter" 
                       label="Increment Counter"
                       className="w-full"
                     />

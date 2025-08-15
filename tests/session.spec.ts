@@ -1,21 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createSessionKey, getActiveSession, revokeSession } from '../src/lib/sessionKeys';
-
-// Mock localStorage for testing
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-});
 
 describe('Session Key Management', () => {
   beforeEach(() => {
-    localStorageMock.clear();
-    localStorageMock.getItem.mockReturnValue('{}');
+    // Setup is handled in tests/setup.ts
+    localStorage.getItem = vi.fn().mockReturnValue('{}');
   });
 
   it('should create a new session key', async () => {
