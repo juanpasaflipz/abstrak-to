@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Navigation } from '@/components/portal/Navigation';
 
 interface ApiEndpoint {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -116,8 +115,12 @@ export default function ApiPlaygroundPage() {
   );
   const [response, setResponse] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [apiKey, setApiKey] = useState<string>('ak_demo_abcdef1234567890'); // Default demo API key
   const [headers, setHeaders] = useState<string>(
-    JSON.stringify(selectedEndpoint.headers || {}, null, 2)
+    JSON.stringify({
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ak_demo_abcdef1234567890'
+    }, null, 2)
   );
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [responseTime, setResponseTime] = useState<number>(0);
@@ -131,15 +134,40 @@ export default function ApiPlaygroundPage() {
 
   useEffect(() => {
     handleEndpointChange(selectedEndpoint);
-  }, [selectedEndpoint]);
+  }, [selectedEndpoint, apiKey]);
 
   const handleEndpointChange = (endpoint: ApiEndpoint) => {
     setSelectedEndpoint(endpoint);
     setRequestBody(JSON.stringify(endpoint.requestBody || {}, null, 2));
-    setHeaders(JSON.stringify(endpoint.headers || {}, null, 2));
+    
+    // Always include API key in headers when switching endpoints
+    const newHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+      ...(endpoint.headers || {})
+    };
+    setHeaders(JSON.stringify(newHeaders, null, 2));
+    
     setResponse('');
     setResponseTime(0);
     setResponseSize(0);
+  };
+
+  const handleApiKeyChange = (newApiKey: string) => {
+    setApiKey(newApiKey);
+    
+    // Update headers with new API key
+    try {
+      const currentHeaders = JSON.parse(headers);
+      currentHeaders.Authorization = `Bearer ${newApiKey}`;
+      setHeaders(JSON.stringify(currentHeaders, null, 2));
+    } catch {
+      // If headers aren't valid JSON, reset to default
+      setHeaders(JSON.stringify({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${newApiKey}`
+      }, null, 2));
+    }
   };
 
   const validateJson = (jsonString: string): boolean => {
@@ -255,9 +283,9 @@ export default function ApiPlaygroundPage() {
             
             {/* Left Sidebar - Endpoints */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                📡 Available Endpoints
-              </h2>
+                          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              📡 Available Endpoints ({filteredEndpoints.length})
+            </h2>
               
               {/* Category Filter */}
               <div className="mb-4">
@@ -311,12 +339,30 @@ export default function ApiPlaygroundPage() {
 
               {/* API Documentation */}
               <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-semibold text-gray-900 mb-2">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900">
+                    📚 Documentation
+                  </h3>
+                  <a 
+                    href="/api-docs"
+                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    View Full Docs →
+                  </a>
+                </div>
+                
+                <h3 className="font-semibold text-gray-900 mb-2 mt-4">
                   🔑 Authentication
                 </h3>
                 <p className="text-sm text-gray-600 mb-2">
-                  Most endpoints require authentication. Include your API key in headers if needed.
+                  All endpoints require an API key in the Authorization header with format: 
+                  <code className="bg-gray-200 px-1 rounded text-xs">Bearer ak_your_key</code>
                 </p>
+                <div className="text-xs space-y-1">
+                  <p><strong>Demo Keys Available:</strong></p>
+                  <p><code className="bg-gray-200 px-1 rounded">ak_demo_abcdef1234567890</code> - 10 requests/min</p>
+                  <p><code className="bg-gray-200 px-1 rounded">ak_test_1234567890abcdef</code> - 100 requests/min</p>
+                </div>
                 
                 <h3 className="font-semibold text-gray-900 mb-2 mt-4">
                   📋 Test Data
@@ -365,6 +411,42 @@ export default function ApiPlaygroundPage() {
                 <p className="text-sm text-gray-600">
                   {selectedEndpoint.description}
                 </p>
+              </div>
+
+              {/* API Key */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  🔑 API Key
+                </label>
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={apiKey}
+                    onChange={(e) => handleApiKeyChange(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg font-mono text-sm"
+                    placeholder="Enter your API key (ak_...)"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => handleApiKeyChange('ak_demo_abcdef1234567890')}
+                      className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                    >
+                      Demo Key (10 req/min)
+                    </button>
+                    <button
+                      onClick={() => handleApiKeyChange('ak_test_1234567890abcdef')}
+                      className="px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200"
+                    >
+                      Test Key (100 req/min)
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    💡 Use the demo keys above or get your own API key from the 
+                    <a href="/dashboard" className="text-blue-600 hover:text-blue-800 ml-1">
+                      Developer Dashboard
+                    </a>
+                  </p>
+                </div>
               </div>
 
               {/* Headers */}
@@ -549,9 +631,12 @@ export default function ApiPlaygroundPage() {
                 Need help? Check out the full API documentation or contact support.
               </p>
               <div className="flex justify-center gap-4">
-                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                <a 
+                  href="/api-docs"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
                   📖 API Docs
-                </button>
+                </a>
                 <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
                   💬 Support
                 </button>
