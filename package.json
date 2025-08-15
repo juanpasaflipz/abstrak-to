@@ -24,7 +24,6 @@
     "@biconomy/account": "3.1.4",
     "@biconomy/core-types": "3.1.4",
     "@biconomy/paymaster": "3.1.4",
-    "@next/font": "14.2.15",
     "@rainbow-me/rainbowkit": "2.0.0",
     "@safe-global/protocol-kit": "1.0.0",
     "@tanstack/react-query": "5.0.0",
@@ -56,7 +55,7 @@
     "prettier": "3.0.0",
     "tailwindcss": "3.3.0",
     "tailwindcss-animate": "1.0.7",
-    "typescript": "5.3.0",
+    "typescript": "5.9.2",
     "vitest": "1.0.0"
   }
 }
