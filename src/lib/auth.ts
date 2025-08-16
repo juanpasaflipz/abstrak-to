@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { validateApiKey as validateDbApiKey } from '@/lib/portal/projects';
 
 export interface ApiUser {
   id: string;
@@ -6,11 +7,14 @@ export interface ApiUser {
   name: string;
   rateLimit: number;
   isActive: boolean;
+  projectId?: string;
+  environmentId?: string;
 }
 
 export interface AuthContext {
   user: ApiUser;
   requestId: string;
+  project?: any;
 }
 
 // Rate limiting storage (in production, use Redis)
@@ -66,7 +70,7 @@ export function extractApiKey(request: NextRequest): string | null {
   return urlKey;
 }
 
-export function validateApiKey(apiKey: string): ApiUser {
+export async function validateApiKey(apiKey: string): Promise<ApiUser> {
   if (!apiKey) {
     throw new AuthError('API key is required');
   }
@@ -75,6 +79,25 @@ export function validateApiKey(apiKey: string): ApiUser {
     throw new AuthError('Invalid API key format');
   }
 
+  // Try database first
+  try {
+    const dbApiKey = await validateDbApiKey(apiKey);
+    if (dbApiKey) {
+      return {
+        id: dbApiKey.user.id,
+        apiKey: apiKey,
+        name: dbApiKey.name,
+        rateLimit: dbApiKey.rateLimit,
+        isActive: dbApiKey.isActive,
+        projectId: dbApiKey.projectId,
+        environmentId: dbApiKey.environmentId,
+      };
+    }
+  } catch (error) {
+    console.log('Database API key validation failed, trying demo keys:', error);
+  }
+
+  // Fall back to demo keys for development
   const user = API_USERS.find(u => u.apiKey === apiKey);
   
   if (!user) {
@@ -123,7 +146,7 @@ export async function authenticate(request: NextRequest): Promise<AuthContext> {
     throw new AuthError('Missing API key. Provide it in Authorization header: Bearer ak_your_key');
   }
 
-  const user = validateApiKey(apiKey);
+  const user = await validateApiKey(apiKey);
   checkRateLimit(user);
 
   return {

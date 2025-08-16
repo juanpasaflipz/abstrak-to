@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { ConnectCard } from '@/components/ConnectCard';
+import { getProjectsAction, createProjectAction } from '@/app/actions/projects';
 
 interface Project {
   id: string;
@@ -46,26 +47,29 @@ export default function DashboardPage() {
   const loadProjects = async () => {
     try {
       setIsLoading(true);
-      // For now, use mock data - we'll implement API later
-      const mockProjects: Project[] = [
-        {
-          id: '1',
-          name: 'My First DApp',
-          description: 'A simple DeFi application',
-          defaultProvider: 'safe',
-          defaultChainId: 84532,
-          createdAt: new Date().toISOString(),
+      const result = await getProjectsAction();
+      if (result.success) {
+        // Transform the data to match our interface
+        const transformedProjects = result.projects.map(project => ({
+          id: project.id,
+          name: project.name,
+          description: project.description,
+          defaultProvider: project.defaultProvider,
+          defaultChainId: project.defaultChainId,
+          createdAt: project.createdAt.toISOString(),
           environments: [
-            { name: 'development', id: 'env1' },
-            { name: 'production', id: 'env2' },
+            { name: 'development', id: 'dev' },
+            { name: 'production', id: 'prod' },
           ],
           _count: {
-            apiKeys: 2,
-            activityLogs: 156,
+            apiKeys: 2, // Will be replaced with real count later
+            activityLogs: 0, // Will be replaced with real count later
           },
-        },
-      ];
-      setProjects(mockProjects);
+        }));
+        setProjects(transformedProjects);
+      } else {
+        console.error('Failed to load projects:', result.error);
+      }
     } catch (error) {
       console.error('Failed to load projects:', error);
     } finally {
@@ -75,29 +79,31 @@ export default function DashboardPage() {
 
   const createProject = async () => {
     try {
-      // For now, just add to local state - we'll implement API later
-      const newProject: Project = {
-        id: Date.now().toString(),
-        name: createForm.name,
-        description: createForm.description || null,
-        defaultProvider: createForm.provider,
-        defaultChainId: createForm.chainId,
-        createdAt: new Date().toISOString(),
-        environments: [
-          { name: 'development', id: 'env1' },
-          { name: 'production', id: 'env2' },
-        ],
-        _count: {
-          apiKeys: 0,
-          activityLogs: 0,
-        },
-      };
+      setIsLoading(true);
       
-      setProjects([newProject, ...projects]);
-      setShowCreateForm(false);
-      setCreateForm({ name: '', description: '', provider: 'safe', chainId: 84532 });
+      // Create FormData object
+      const formData = new FormData();
+      formData.append('name', createForm.name);
+      formData.append('description', createForm.description);
+      formData.append('defaultProvider', createForm.provider);
+      formData.append('defaultChainId', createForm.chainId.toString());
+      
+      const result = await createProjectAction(formData);
+      
+      if (result.success) {
+        // Reload projects to get the latest data
+        await loadProjects();
+        setShowCreateForm(false);
+        setCreateForm({ name: '', description: '', provider: 'safe', chainId: 84532 });
+      } else {
+        console.error('Failed to create project:', result.error);
+        alert(`Failed to create project: ${result.error}`);
+      }
     } catch (error) {
       console.error('Failed to create project:', error);
+      alert('Failed to create project. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
