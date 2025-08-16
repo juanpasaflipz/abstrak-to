@@ -9,7 +9,8 @@ import {
   CommandLineIcon,
   BeakerIcon,
   CurrencyDollarIcon,
-  RocketLaunchIcon
+  RocketLaunchIcon,
+  BookOpenIcon
 } from '@heroicons/react/24/outline';
 import { SparklesIcon as SparklesIconSolid } from '@heroicons/react/24/solid';
 
@@ -28,6 +29,12 @@ export default function Header(): JSX.Element {
       href: '/playground',
       icon: CommandLineIcon,
       description: 'Interactive API testing'
+    },
+    { 
+      label: 'Recipes', 
+      href: '/recipes',
+      icon: BookOpenIcon,
+      description: 'Code templates & examples'
     },
     { 
       label: 'Demo', 
@@ -98,8 +105,21 @@ export default function Header(): JSX.Element {
                 );
               })}
               
-              {/* CTA Button */}
-              <div className="ml-2 pl-2 border-l border-gray-200/50">
+              {/* CTA Buttons */}
+              <div className="ml-2 pl-2 border-l border-gray-200/50 flex items-center space-x-2">
+                <Link
+                  href="/onboarding"
+                  className="group relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 
+                             hover:from-purple-700 hover:to-pink-700 text-white font-semibold 
+                             px-3 py-2 rounded-xl shadow-lg shadow-purple-500/25 
+                             hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300"
+                >
+                  <div className="relative flex items-center space-x-1">
+                    <SparklesIcon className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                    <span className="whitespace-nowrap text-sm">Tutorial</span>
+                  </div>
+                </Link>
+                
                 <Link
                   href="/dashboard"
                   className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 

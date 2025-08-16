@@ -22,7 +22,8 @@ import {
   CogIcon,
   BeakerIcon,
   KeyIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  LinkIcon
 } from '@heroicons/react/24/outline';
 import { ShieldExclamationIcon } from '@heroicons/react/24/solid';
 
@@ -390,30 +391,53 @@ export default function DashboardPage() {
                         <ChevronRightIcon className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                       </button>
                       
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-3 gap-2">
                         <button
                           onClick={() => window.location.href = `/dashboard/configure?project=${project.id}`}
-                          className="group bg-amber-100/80 backdrop-blur-sm text-amber-700 py-3 px-4 rounded-xl hover:bg-amber-200 transition-all duration-300 font-semibold border border-amber-200/50 hover:scale-105 flex items-center justify-center gap-2"
+                          className="group bg-amber-100/80 backdrop-blur-sm text-amber-700 py-3 px-3 rounded-xl hover:bg-amber-200 transition-all duration-300 font-semibold border border-amber-200/50 hover:scale-105 flex items-center justify-center gap-1"
                         >
                           <CogIcon className="h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
-                          <span>Configure</span>
+                          <span className="text-sm">Config</span>
                         </button>
                         <button
                           onClick={() => window.location.href = `/api-playground`}
-                          className="group bg-gray-100/80 backdrop-blur-sm text-gray-700 py-3 px-4 rounded-xl hover:bg-gray-200 transition-all duration-300 font-semibold border border-gray-200/50 hover:scale-105 flex items-center justify-center gap-2"
+                          className="group bg-gray-100/80 backdrop-blur-sm text-gray-700 py-3 px-3 rounded-xl hover:bg-gray-200 transition-all duration-300 font-semibold border border-gray-200/50 hover:scale-105 flex items-center justify-center gap-1"
                         >
                           <BeakerIcon className="h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
-                          <span>API</span>
+                          <span className="text-sm">API</span>
+                        </button>
+                        <button
+                          onClick={() => window.location.href = `/dashboard/spending-limits?project=${project.id}`}
+                          className="group bg-orange-100/80 backdrop-blur-sm text-orange-700 py-3 px-3 rounded-xl hover:bg-orange-200 transition-all duration-300 font-semibold border border-orange-200/50 hover:scale-105 flex items-center justify-center gap-1"
+                        >
+                          <ChartBarIcon className="h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
+                          <span className="text-sm">Limits</span>
                         </button>
                       </div>
                       
-                      <button
-                        onClick={() => window.location.href = `/dashboard/session-policies?project=${project.id}`}
-                        className="group w-full bg-purple-100/80 backdrop-blur-sm text-purple-700 py-3 px-4 rounded-xl hover:bg-purple-200 transition-all duration-300 font-semibold border border-purple-200/50 hover:scale-105 flex items-center justify-center gap-2"
-                      >
-                        <KeyIcon className="h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
-                        <span>Session Policies</span>
-                      </button>
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          onClick={() => window.location.href = `/dashboard/session-policies?project=${project.id}`}
+                          className="group bg-purple-100/80 backdrop-blur-sm text-purple-700 py-3 px-2 rounded-xl hover:bg-purple-200 transition-all duration-300 font-semibold border border-purple-200/50 hover:scale-105 flex items-center justify-center gap-1"
+                        >
+                          <KeyIcon className="h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
+                          <span className="text-sm">Sessions</span>
+                        </button>
+                        <button
+                          onClick={() => window.location.href = `/dashboard/paymaster-policies?project=${project.id}`}
+                          className="group bg-green-100/80 backdrop-blur-sm text-green-700 py-3 px-2 rounded-xl hover:bg-green-200 transition-all duration-300 font-semibold border border-green-200/50 hover:scale-105 flex items-center justify-center gap-1"
+                        >
+                          <CurrencyDollarIcon className="h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
+                          <span className="text-sm">Paymaster</span>
+                        </button>
+                        <button
+                          onClick={() => window.location.href = `/dashboard/webhooks?project=${project.id}`}
+                          className="group bg-indigo-100/80 backdrop-blur-sm text-indigo-700 py-3 px-2 rounded-xl hover:bg-indigo-200 transition-all duration-300 font-semibold border border-indigo-200/50 hover:scale-105 flex items-center justify-center gap-1"
+                        >
+                          <LinkIcon className="h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
+                          <span className="text-sm">Webhooks</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

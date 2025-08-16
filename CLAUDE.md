@@ -135,3 +135,4 @@ Counter contract example at `contracts/Counter.sol`:
 - memory
 - m
 - m
+- memor
