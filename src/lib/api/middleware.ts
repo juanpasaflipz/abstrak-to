@@ -7,10 +7,10 @@ export interface ProjectContext extends AuthContext {
   environment: any;
 }
 
-export async function withProjectAuth<T extends any[]>(
-  handler: (context: ProjectContext, ...args: T) => Promise<Response>
+export function withProjectAuth(
+  handler: (context: ProjectContext, request: NextRequest) => Promise<Response>
 ) {
-  return async (request: NextRequest, ...args: T): Promise<Response> => {
+  return async (request: NextRequest): Promise<Response> => {
     try {
       // First authenticate the API key
       const authContext = await authenticate(request);
@@ -67,7 +67,7 @@ export async function withProjectAuth<T extends any[]>(
           ...authContext,
           project,
           environment,
-        }, ...args);
+        }, request);
       }
 
       // For demo keys, create a mock project context
@@ -92,7 +92,7 @@ export async function withProjectAuth<T extends any[]>(
         ...authContext,
         project: mockProject,
         environment: mockEnvironment,
-      }, ...args);
+      }, request);
 
     } catch (error) {
       console.error('Project auth middleware error:', error);
@@ -134,27 +134,27 @@ export async function withProjectAuth<T extends any[]>(
 export function withPolicyEnforcement(
   policyType: 'session' | 'gas' | 'spending'
 ) {
-  return function <T extends any[]>(
-    handler: (context: ProjectContext, ...args: T) => Promise<Response>
+  return function (
+    handler: (context: ProjectContext, request: NextRequest) => Promise<Response>
   ) {
-    return async (context: ProjectContext, ...args: T): Promise<Response> => {
+    return async (context: ProjectContext, request: NextRequest): Promise<Response> => {
       // TODO: Implement policy validation based on type
       // For now, just pass through
-      return await handler(context, ...args);
+      return await handler(context, request);
     };
   };
 }
 
 // Activity logging middleware
 export function withActivityLogging(event: string, endpoint: string) {
-  return function <T extends any[]>(
-    handler: (context: ProjectContext, ...args: T) => Promise<Response>
-  ) {
-    return async (context: ProjectContext, request: NextRequest, ...args: T): Promise<Response> => {
+  return function (
+    handler: (context: ProjectContext, request: NextRequest) => Promise<Response>
+  ): (context: ProjectContext, request: NextRequest) => Promise<Response> {
+    return async (context: ProjectContext, request: NextRequest): Promise<Response> => {
       const startTime = Date.now();
       
       try {
-        const response = await handler(context, request, ...args);
+        const response = await handler(context, request);
         const responseTime = Date.now() - startTime;
         
         // Log the activity asynchronously

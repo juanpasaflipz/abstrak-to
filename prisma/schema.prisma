@@ -122,7 +122,8 @@ model ProviderConfig {
   
   // Provider-specific settings
   apiKey     String?
-  policyId   String? // for Alchemy gas policy
+  customRpc  String?
+  settings   Json? // Additional provider-specific settings
   
   // Capabilities
   supportsGasSponsorship Boolean @default(false)
@@ -168,18 +169,13 @@ model GasPolicy {
 
 // Session key policies
 model SessionPolicy {
-  id        String @id @default(cuid())
-  projectId String
-  name      String
+  id          String @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
   
-  // Session configuration
-  defaultTTL       Int      @default(1800) // 30 minutes in seconds
-  maxValue         String   // max value per transaction (wei)
-  allowedContracts Json // contract addresses
-  allowedMethods   Json // method signatures/selectors
-  
-  // Daily limits
-  dailyCap String // daily spending cap (wei)
+  // Comprehensive permissions structure stored as JSON
+  permissions Json // Contains contracts, spendingLimits, timeRestrictions, ipWhitelist
   
   isActive  Boolean @default(true)
   createdAt DateTime @default(now())

@@ -3,6 +3,33 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAccount } from 'wagmi';
+import {
+  SparklesIcon,
+  BoltIcon,
+  LockClosedIcon,
+  RocketLaunchIcon,
+  CheckIcon,
+  ChevronRightIcon,
+  ChevronLeftIcon,
+  PlusIcon,
+  XMarkIcon,
+  InformationCircleIcon,
+  CodeBracketIcon,
+  GlobeAltIcon,
+  ClockIcon,
+  CurrencyDollarIcon,
+  ShieldCheckIcon,
+  CogIcon,
+  BeakerIcon,
+  KeyIcon,
+  ChartBarIcon,
+  CloudIcon,
+  UserGroupIcon,
+  ArrowTrendingUpIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon
+} from '@heroicons/react/24/outline';
+import { ShieldExclamationIcon } from '@heroicons/react/24/solid';
 
 interface ProjectStats {
   totalRequests: number;
@@ -96,213 +123,299 @@ export default function ProjectDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-6"></div>
+            <div className="absolute inset-0 w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mt-2" style={{animationDirection: 'reverse'}}></div>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Loading project dashboard...</h3>
+          <p className="text-gray-600">Gathering your project analytics and metrics</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
+      {/* Enhanced Header */}
+      <div className="bg-white/80 backdrop-blur-sm shadow-xl border-b border-gray-200/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center space-x-6">
               <button
                 onClick={() => router.push('/dashboard')}
-                className="text-gray-500 hover:text-gray-700"
+                className="group w-10 h-10 bg-gray-100/80 backdrop-blur-sm hover:bg-gray-200 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 border border-gray-200/50"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
+                <ChevronLeftIcon className="w-5 h-5 text-gray-600 group-hover:text-gray-900 group-hover:-translate-x-0.5 transition-all duration-300" />
               </button>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">My First DApp</h1>
-                <p className="text-sm text-gray-500">Project Dashboard</p>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <SparklesIcon className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">My First DApp</h1>
+                  <p className="text-gray-600 font-medium flex items-center gap-2">
+                    <ChartBarIcon className="h-4 w-4 text-blue-600" />
+                    Project Dashboard
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <select className="border border-gray-300 rounded-lg px-3 py-1 text-sm">
-                <option>Development</option>
-                <option>Production</option>
-              </select>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <select className="appearance-none bg-white/80 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl px-4 py-3 pr-10 text-sm font-semibold text-gray-700 hover:border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 focus:outline-none transition-all duration-300 shadow-sm hover:shadow-md">
+                  <option>🚀 Development</option>
+                  <option>🏭 Production</option>
+                </select>
+                <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 rotate-90 pointer-events-none" />
+              </div>
+              <button className="group relative px-4 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center gap-2">
+                <div className="w-2 h-2 bg-emerald-300 rounded-full animate-pulse"></div>
+                <span>Live</span>
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <button
-            onClick={() => router.push(`/dashboard/${projectId}/keys`)}
-            className="bg-white p-4 rounded-lg border hover:shadow-md transition-shadow text-left"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-gray-900">API Keys</h3>
-                <p className="text-sm text-gray-500">Manage access</p>
-              </div>
-              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-              </svg>
-            </div>
-          </button>
-
-          <button
-            onClick={() => router.push(`/dashboard/${projectId}/providers`)}
-            className="bg-white p-4 rounded-lg border hover:shadow-md transition-shadow text-left"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-gray-900">Providers</h3>
-                <p className="text-sm text-gray-500">Configure AA</p>
-              </div>
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-          </button>
-
-          <button
-            onClick={() => router.push(`/playground`)}
-            className="bg-white p-4 rounded-lg border hover:shadow-md transition-shadow text-left"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-gray-900">Playground</h3>
-                <p className="text-sm text-gray-500">Test API</p>
-              </div>
-              <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-          </button>
-
-          <button
-            onClick={() => router.push(`/dashboard/${projectId}/analytics`)}
-            className="bg-white p-4 rounded-lg border hover:shadow-md transition-shadow text-left"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-gray-900">Analytics</h3>
-                <p className="text-sm text-gray-500">View metrics</p>
-              </div>
-              <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-          </button>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white p-6 rounded-lg border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">API Requests</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalRequests.toLocaleString()}</p>
-                <p className="text-xs text-green-600">+12% from last week</p>
-              </div>
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Success Rate</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.successRate}%</p>
-                <p className="text-xs text-green-600">+0.2% from last week</p>
-              </div>
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Gas Sponsored</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.gasSponsored} ETH</p>
-                <p className="text-xs text-green-600">+8% from last week</p>
-              </div>
-              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active Users</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.activeUsers}</p>
-                <p className="text-xs text-green-600">+15% from last week</p>
-              </div>
-              <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active Sessions</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.activeSessions}</p>
-                <p className="text-xs text-green-600">+3% from last week</p>
-              </div>
-              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="bg-white rounded-lg border">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Recent Activity</h2>
-          </div>
-          <div className="divide-y divide-gray-200">
-            {recentActivity.map((activity) => (
-              <div key={activity.id} className="px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 rounded-full ${
-                    activity.status === 'success' ? 'bg-green-500' :
-                    activity.status === 'error' ? 'bg-red-500' : 'bg-yellow-500'
-                  }`} />
-                  <div>
-                    <p className="font-medium text-gray-900">{activity.event}</p>
-                    <p className="text-sm text-gray-500">{activity.description}</p>
+        {/* Enhanced Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          {[
+            {
+              title: 'API Keys',
+              description: 'Manage access tokens',
+              icon: KeyIcon,
+              color: 'blue',
+              path: `/dashboard/${projectId}/keys`,
+              badge: '2 active'
+            },
+            {
+              title: 'Providers',
+              description: 'Configure Account Abstraction',
+              icon: CogIcon,
+              color: 'emerald',
+              path: `/dashboard/${projectId}/providers`,
+              badge: 'Safe{Core}'
+            },
+            {
+              title: 'API Playground',
+              description: 'Test endpoints & flows',
+              icon: BeakerIcon,
+              color: 'purple',
+              path: `/playground`,
+              badge: 'Interactive'
+            },
+            {
+              title: 'Analytics',
+              description: 'Performance metrics',
+              icon: ChartBarIcon,
+              color: 'amber',
+              path: `/dashboard/${projectId}/analytics`,
+              badge: 'Real-time'
+            }
+          ].map((action, index) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={action.title}
+                onClick={() => router.push(action.path)}
+                className={`group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-200/50 hover:shadow-2xl transition-all duration-500 hover:scale-105 text-left overflow-hidden`}
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                {/* Background Gradient Effect */}
+                <div className={`absolute inset-0 bg-gradient-to-br from-${action.color}-500/5 to-${action.color}-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                
+                <div className="relative">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-12 h-12 bg-gradient-to-br from-${action.color}-500 to-${action.color}-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <Icon className="h-6 w-6 text-white" />
+                    </div>
+                    <div className={`px-3 py-1 bg-${action.color}-100 text-${action.color}-700 rounded-full text-xs font-semibold`}>
+                      {action.badge}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-gray-800 transition-colors">
+                      {action.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      {action.description}
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mt-4 text-sm font-medium text-gray-500 group-hover:text-gray-700 transition-colors">
+                    <span>Open</span>
+                    <ChevronRightIcon className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                   </div>
                 </div>
-                <span className="text-sm text-gray-500">{activity.timestamp}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Enhanced Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
+          {[
+            {
+              title: 'API Requests',
+              value: stats.totalRequests.toLocaleString(),
+              change: '+12%',
+              changeType: 'positive',
+              icon: CloudIcon,
+              color: 'blue',
+              description: 'Total requests this week'
+            },
+            {
+              title: 'Success Rate',
+              value: `${stats.successRate}%`,
+              change: '+0.2%',
+              changeType: 'positive',
+              icon: CheckCircleIcon,
+              color: 'emerald',
+              description: 'Request success rate'
+            },
+            {
+              title: 'Gas Sponsored',
+              value: `${stats.gasSponsored} ETH`,
+              change: '+8%',
+              changeType: 'positive',
+              icon: BoltIcon,
+              color: 'purple',
+              description: 'Total gas coverage'
+            },
+            {
+              title: 'Active Users',
+              value: stats.activeUsers.toString(),
+              change: '+15%',
+              changeType: 'positive',
+              icon: UserGroupIcon,
+              color: 'amber',
+              description: 'Unique users this week'
+            },
+            {
+              title: 'Active Sessions',
+              value: stats.activeSessions.toString(),
+              change: '+3%',
+              changeType: 'positive',
+              icon: KeyIcon,
+              color: 'rose',
+              description: 'Current live sessions'
+            }
+          ].map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <div
+                key={stat.title}
+                className={`group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-200/50 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 overflow-hidden`}
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                {/* Background Gradient Effect */}
+                <div className={`absolute inset-0 bg-gradient-to-br from-${stat.color}-500/5 to-${stat.color}-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-12 h-12 bg-gradient-to-br from-${stat.color}-500 to-${stat.color}-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <Icon className="h-6 w-6 text-white" />
+                    </div>
+                    <div className={`flex items-center gap-1 px-3 py-1 bg-${stat.changeType === 'positive' ? 'emerald' : 'red'}-100 text-${stat.changeType === 'positive' ? 'emerald' : 'red'}-700 rounded-full text-xs font-semibold`}>
+                      <ArrowTrendingUpIcon className="h-3 w-3" />
+                      {stat.change}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-gray-600">{stat.title}</p>
+                    <p className="text-3xl font-bold text-gray-900 group-hover:text-gray-800 transition-colors">
+                      {stat.value}
+                    </p>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      {stat.description}
+                    </p>
+                  </div>
+                </div>
               </div>
-            ))}
+            );
+          })}
+        </div>
+
+        {/* Enhanced Recent Activity */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 px-8 py-6 border-b border-gray-200/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <ClockIcon className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
+                  <p className="text-sm text-gray-600">Latest events and transactions</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                Live
+              </div>
+            </div>
           </div>
-          <div className="px-6 py-4 border-t border-gray-200">
+          
+          <div className="divide-y divide-gray-200/50">
+            {recentActivity.map((activity, index) => {
+              const getStatusInfo = (status: string) => {
+                switch(status) {
+                  case 'success': return { icon: CheckCircleIcon, color: 'emerald', bg: 'emerald-100' };
+                  case 'error': return { icon: ExclamationCircleIcon, color: 'red', bg: 'red-100' };
+                  default: return { icon: ClockIcon, color: 'amber', bg: 'amber-100' };
+                }
+              };
+              
+              const statusInfo = getStatusInfo(activity.status);
+              const StatusIcon = statusInfo.icon;
+              
+              return (
+                <div 
+                  key={activity.id} 
+                  className="group px-8 py-6 hover:bg-gray-50/50 transition-all duration-300"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-4">
+                      <div className={`w-10 h-10 bg-${statusInfo.bg} rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
+                        <StatusIcon className={`h-5 w-5 text-${statusInfo.color}-600`} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-bold text-gray-900 group-hover:text-gray-700 transition-colors">
+                            {activity.event}
+                          </h3>
+                          <div className={`px-2 py-1 bg-${statusInfo.color}-100 text-${statusInfo.color}-700 rounded-lg text-xs font-semibold capitalize`}>
+                            {activity.status}
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          {activity.description}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+                      <ClockIcon className="h-4 w-4" />
+                      <span>{activity.timestamp}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 px-8 py-6 border-t border-gray-200/50">
             <button
               onClick={() => router.push(`/dashboard/${projectId}/logs`)}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              className="group flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold transition-all duration-300 hover:scale-105"
             >
-              View all activity →
+              <span>View all activity</span>
+              <ChevronRightIcon className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
             </button>
           </div>
         </div>

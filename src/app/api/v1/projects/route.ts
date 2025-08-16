@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { withProjectAuth } from '@/lib/api/middleware';
 import { createSuccessResponse, createErrorResponse, createValidationErrorResponse } from '@/lib/api/responses';
 import { createProject, getUserProjects, generateApiKey } from '@/lib/portal/projects';
+import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
 const createProjectSchema = z.object({
@@ -12,7 +13,7 @@ const createProjectSchema = z.object({
 });
 
 async function createProjectHandler(
-  authContext: any,
+  context: any,
   request: NextRequest
 ): Promise<Response> {
   try {
@@ -26,7 +27,7 @@ async function createProjectHandler(
         const field = error.path.join('.');
         fieldErrors[field] = error.message;
       });
-      return createValidationErrorResponse(fieldErrors, authContext.requestId);
+      return createValidationErrorResponse(fieldErrors, context.requestId);
     }
 
     const { name, description, defaultProvider, defaultChainId } = validationResult.data;
@@ -43,10 +44,22 @@ async function createProjectHandler(
       defaultChainId,
     });
 
+    // Get the created environments
+    const environments = await prisma.environment.findMany({
+      where: { projectId: project.id },
+    });
+
+    const devEnv = environments.find(env => env.name === 'development');
+    const prodEnv = environments.find(env => env.name === 'production');
+
+    if (!devEnv || !prodEnv) {
+      throw new Error('Failed to create default environments');
+    }
+
     // Generate initial API keys for both environments
     const devKey = await generateApiKey(
       project.id,
-      'development',
+      devEnv.id,
       userId,
       `${project.name} Development Key`,
       ['read', 'write', 'simulate']
@@ -54,7 +67,7 @@ async function createProjectHandler(
 
     const prodKey = await generateApiKey(
       project.id,
-      'production',
+      prodEnv.id,
       userId,
       `${project.name} Production Key`,
       ['read', 'write']
@@ -85,20 +98,20 @@ async function createProjectHandler(
       },
     };
 
-    return createSuccessResponse(response, authContext.requestId, 201);
+    return createSuccessResponse(response, context.requestId, 201);
   } catch (error) {
     console.error('Failed to create project:', error);
     return createErrorResponse(
       'INTERNAL_ERROR',
       'Failed to create project',
-      authContext.requestId,
+      context.requestId,
       500
     );
   }
 }
 
 async function getProjectsHandler(
-  authContext: any,
+  context: any,
   request: NextRequest
 ): Promise<Response> {
   try {
@@ -120,13 +133,13 @@ async function getProjectsHandler(
       total: projects.length,
     };
 
-    return createSuccessResponse(response, authContext.requestId);
+    return createSuccessResponse(response, context.requestId);
   } catch (error) {
     console.error('Failed to get projects:', error);
     return createErrorResponse(
       'INTERNAL_ERROR',
       'Failed to get projects',
-      authContext.requestId,
+      context.requestId,
       500
     );
   }

@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from 'next/navigation';
 import { useAccount } from 'wagmi';
 
-export function Navigation() {
+export function Navigation(): JSX.Element {
   const router = useRouter();
   const pathname = usePathname();
   const { isConnected } = useAccount();
@@ -80,7 +80,7 @@ export function Navigation() {
 }
 
 // New component for the prominent navigation under hero section
-export function ProminentNavigation() {
+export function ProminentNavigation(): JSX.Element {
   const router = useRouter();
   const pathname = usePathname();
   const { isConnected } = useAccount();

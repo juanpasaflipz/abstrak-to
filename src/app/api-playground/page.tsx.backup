@@ -152,7 +152,7 @@ export default function ApiPlaygroundPage() {
   );
   const [response, setResponse] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState<string>('ak_demo_abcdef1234567890');
+  const [apiKey, setApiKey] = useState<string>('ak_demo_abcdef1234567890'); // Default demo API key
   const [headers, setHeaders] = useState<string>(
     JSON.stringify({
       'Content-Type': 'application/json',
@@ -177,6 +177,7 @@ export default function ApiPlaygroundPage() {
     setSelectedEndpoint(endpoint);
     setRequestBody(JSON.stringify(endpoint.requestBody || {}, null, 2));
     
+    // Always include API key in headers when switching endpoints
     const newHeaders = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
@@ -192,11 +193,13 @@ export default function ApiPlaygroundPage() {
   const handleApiKeyChange = (newApiKey: string) => {
     setApiKey(newApiKey);
     
+    // Update headers with new API key
     try {
       const currentHeaders = JSON.parse(headers);
       currentHeaders.Authorization = `Bearer ${newApiKey}`;
       setHeaders(JSON.stringify(currentHeaders, null, 2));
     } catch {
+      // If headers aren't valid JSON, reset to default
       setHeaders(JSON.stringify({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${newApiKey}`
@@ -214,6 +217,7 @@ export default function ApiPlaygroundPage() {
   };
 
   const executeRequest = async () => {
+    // Validate JSON inputs
     if (!validateJson(headers)) {
       setResponse('Error: Invalid JSON in headers');
       return;
@@ -266,6 +270,7 @@ export default function ApiPlaygroundPage() {
         formattedResponse = responseText;
       }
 
+      // Format the response with metadata
       const responseMeta = [
         `Status: ${res.status} ${res.statusText}`,
         `Response Time: ${responseTimeMs}ms`,
@@ -296,23 +301,17 @@ export default function ApiPlaygroundPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Background decorations */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-indigo-500/5 to-purple-500/5" />
-      <div className="absolute -top-24 -left-24 w-96 h-96 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 
-                      rounded-full blur-3xl" />
-      <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-gradient-to-br from-indigo-400/10 to-purple-400/10 
-                      rounded-full blur-3xl" />
-      
-      <div className="relative z-10 container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation temporarily removed for debugging */}
+      <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 
                           bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl mb-6 
-                          shadow-2xl shadow-blue-500/30 animate-bounce-gentle">
+                          shadow-2xl shadow-blue-500/30">
             <RocketLaunchIcon className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
+          <h1 className="text-5xl font-bold mb-6">
             <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 
                              bg-clip-text text-transparent">
               API Playground
@@ -344,21 +343,21 @@ export default function ApiPlaygroundPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             {/* Left Sidebar - Endpoints */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-white to-gray-50 
-                            border border-gray-200/50 rounded-3xl p-6 shadow-2xl shadow-gray-200/50">
+            <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-gray-100 
+                            border border-slate-200/50 rounded-2xl p-6 shadow-xl shadow-slate-200/50">
               {/* Background decoration */}
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-500/5 to-slate-500/5" />
-              <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-gray-400/10 to-slate-400/10 
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-500/5 to-gray-500/5" />
+              <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-slate-400/10 to-gray-400/10 
                               rounded-full blur-xl" />
               
               <div className="relative z-10">
                 <div className="flex items-center space-x-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-slate-700 rounded-2xl 
-                                  flex items-center justify-center shadow-xl shadow-gray-500/25">
+                  <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-gray-700 rounded-xl 
+                                  flex items-center justify-center shadow-lg">
                     <ServerIcon className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-xl font-semibold text-gray-900">
                       Available Endpoints
                     </h2>
                     <p className="text-sm text-gray-600">
@@ -369,17 +368,16 @@ export default function ApiPlaygroundPage() {
               
                 {/* Category Filter */}
                 <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
                     <CogIcon className="w-4 h-4 inline mr-2" />
                     Filter by Category
                   </label>
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full p-3 border border-gray-300/50 rounded-xl text-sm 
+                    className="w-full p-3 border border-gray-300 rounded-xl text-sm 
                                bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 
-                               focus:ring-blue-500 focus:border-transparent transition-all duration-200
-                               shadow-lg shadow-gray-200/50"
+                               focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   >
                     {categories.map(category => (
                       <option key={category} value={category}>{category}</option>
@@ -401,17 +399,15 @@ export default function ApiPlaygroundPage() {
                       <button
                         key={index}
                         onClick={() => handleEndpointChange(endpoint)}
-                        className={`group w-full text-left p-4 rounded-2xl border-2 transition-all duration-300 
-                                   shadow-lg hover:shadow-xl
+                        className={`group w-full text-left p-4 rounded-xl border-2 transition-all duration-200 
                                    ${isSelected
-                                     ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-blue-200/50 transform scale-[1.02]'
-                                     : 'border-gray-200/50 hover:border-blue-300 hover:bg-white/80 hover:shadow-gray-300/50'
+                                     ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg shadow-blue-200/50'
+                                     : 'border-gray-200 hover:border-blue-300 hover:bg-white/80 hover:shadow-md'
                                    }`}
                       >
                         <div className="flex items-center gap-3 mb-3">
                           <div className={`px-3 py-1 text-xs font-bold rounded-lg text-white 
-                                           bg-gradient-to-r ${methodColors[endpoint.method] || methodColors['GET']}
-                                           shadow-lg`}>
+                                           bg-gradient-to-r ${methodColors[endpoint.method] || methodColors['GET']}`}>
                             {endpoint.method}
                           </div>
                           <div className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-lg font-medium">
@@ -419,11 +415,11 @@ export default function ApiPlaygroundPage() {
                           </div>
                           {isSelected && (
                             <div className="ml-auto">
-                              <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-lg shadow-blue-500/50"></div>
+                              <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
                             </div>
                           )}
                         </div>
-                        <div className="bg-gray-900 rounded-xl p-3 mb-3 shadow-xl">
+                        <div className="bg-gray-900 rounded-lg p-2 mb-3">
                           <code className="text-xs text-green-400 font-mono break-all">
                             {formatEndpointPath(endpoint.path)}
                           </code>
@@ -435,25 +431,96 @@ export default function ApiPlaygroundPage() {
                     );
                   })}
                 </div>
+
+                {/* API Documentation */}
+                <div className="mt-8 bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-white/40">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-3">
+                      <BookOpenIcon className="w-5 h-5 text-blue-600" />
+                      <h3 className="font-semibold text-gray-900">
+                        Documentation
+                      </h3>
+                    </div>
+                    <a 
+                      href="/api-docs"
+                      className="group flex items-center space-x-2 text-sm text-blue-600 hover:text-blue-800 
+                                 font-medium transition-colors duration-200"
+                    >
+                      <span>View Full Docs</span>
+                      <LinkIcon className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                    </a>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <KeyIcon className="w-4 h-4 text-green-600" />
+                      <h4 className="font-semibold text-gray-900">Authentication</h4>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                      All endpoints require an API key in the Authorization header:
+                    </p>
+                    <div className="bg-gray-900 rounded-lg p-3 mb-3">
+                      <code className="text-green-400 text-xs font-mono">Bearer ak_your_key</code>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-gray-700">Demo Keys Available:</p>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+                          <code className="text-xs font-mono text-green-700">ak_demo_abcdef1234567890</code>
+                          <span className="text-xs text-green-600 font-medium">10 req/min</span>
+                        </div>
+                        <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+                          <code className="text-xs font-mono text-blue-700">ak_test_1234567890abcdef</code>
+                          <span className="text-xs text-blue-600 font-medium">100 req/min</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex items-center space-x-2 mb-3">
+                      <BeakerIcon className="w-4 h-4 text-purple-600" />
+                      <h4 className="font-semibold text-gray-900">Test Data</h4>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Test Address:</p>
+                        <div className="bg-gray-900 rounded-lg p-3">
+                          <code className="text-green-400 text-xs font-mono break-all">
+                            0x1234567890123456789012345678901234567890
+                          </code>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Test Contract:</p>
+                        <div className="bg-gray-900 rounded-lg p-3">
+                          <code className="text-green-400 text-xs font-mono break-all">
+                            0x742d35Cc6434C0532925a3b8c5481a3d3E7Cc4A7
+                          </code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Center - Request Configuration */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-white to-blue-50 
-                            border border-blue-200/50 rounded-3xl p-6 shadow-2xl shadow-blue-200/50">
+            <div className="relative overflow-hidden bg-gradient-to-br from-white to-gray-50 
+                            border border-gray-200/50 rounded-2xl p-6 shadow-xl shadow-gray-200/50">
               {/* Background decoration */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/10" />
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5" />
               <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 
                               rounded-full blur-xl" />
               
               <div className="relative z-10">
                 <div className="flex items-center space-x-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl 
-                                  flex items-center justify-center shadow-xl shadow-blue-500/25">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl 
+                                  flex items-center justify-center shadow-lg">
                     <CogIcon className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-xl font-semibold text-gray-900">
                       Request Configuration
                     </h2>
                     <p className="text-sm text-gray-600">
@@ -463,9 +530,9 @@ export default function ApiPlaygroundPage() {
                 </div>
 
                 {/* Endpoint Info */}
-                <div className="mb-6 bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-white/40 shadow-lg">
+                <div className="mb-6 bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-white/40">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className={`px-3 py-1 text-sm font-bold rounded-lg text-white shadow-lg
+                    <div className={`px-3 py-1 text-sm font-bold rounded-lg text-white 
                                      ${selectedEndpoint.method === 'GET' ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
                                        selectedEndpoint.method === 'POST' ? 'bg-gradient-to-r from-blue-500 to-indigo-600' :
                                        selectedEndpoint.method === 'PUT' ? 'bg-gradient-to-r from-yellow-500 to-orange-600' :
@@ -476,7 +543,7 @@ export default function ApiPlaygroundPage() {
                       {selectedEndpoint.category}
                     </div>
                   </div>
-                  <div className="bg-gray-900 rounded-xl p-3 mb-3 shadow-xl">
+                  <div className="bg-gray-900 rounded-lg p-3 mb-3">
                     <code className="text-green-400 text-sm font-mono break-all">
                       {selectedEndpoint.path}
                     </code>
@@ -490,7 +557,7 @@ export default function ApiPlaygroundPage() {
                 <div className="mb-6">
                   <div className="flex items-center space-x-2 mb-3">
                     <KeyIcon className="w-4 h-4 text-blue-600" />
-                    <label className="text-sm font-semibold text-gray-700">
+                    <label className="text-sm font-medium text-gray-700">
                       API Key
                     </label>
                   </div>
@@ -499,88 +566,92 @@ export default function ApiPlaygroundPage() {
                       type="text"
                       value={apiKey}
                       onChange={(e) => handleApiKeyChange(e.target.value)}
-                      className="w-full p-3 border border-gray-300/50 rounded-xl font-mono text-sm 
+                      className="w-full p-3 border border-gray-300 rounded-xl font-mono text-sm 
                                  bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 
-                                 focus:ring-blue-500 focus:border-transparent transition-all duration-200
-                                 shadow-lg shadow-gray-200/50"
+                                 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                       placeholder="Enter your API key (ak_...)"
                     />
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => handleApiKeyChange('ak_demo_abcdef1234567890')}
                         className="group px-3 py-2 text-xs font-medium bg-blue-100 text-blue-700 
-                                   rounded-lg hover:bg-blue-200 hover:shadow-lg transition-all duration-200
-                                   shadow-md hover:scale-105"
+                                   rounded-lg hover:bg-blue-200 hover:shadow-md transition-all duration-200"
                       >
-                        Demo Key (10 req/min)
+                        <span className="group-hover:scale-105 transition-transform duration-200 inline-block">
+                          Demo Key (10 req/min)
+                        </span>
                       </button>
                       <button
                         onClick={() => handleApiKeyChange('ak_test_1234567890abcdef')}
                         className="group px-3 py-2 text-xs font-medium bg-green-100 text-green-700 
-                                   rounded-lg hover:bg-green-200 hover:shadow-lg transition-all duration-200
-                                   shadow-md hover:scale-105"
+                                   rounded-lg hover:bg-green-200 hover:shadow-md transition-all duration-200"
                       >
-                        Test Key (100 req/min)
+                        <span className="group-hover:scale-105 transition-transform duration-200 inline-block">
+                          Test Key (100 req/min)
+                        </span>
                       </button>
+                    </div>
+                    <div className="flex items-start space-x-2 p-3 bg-blue-50 rounded-lg">
+                      <InformationCircleIcon className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-blue-700 leading-relaxed">
+                        Use the demo keys above or get your own API key from the 
+                        <a href="/dashboard" className="font-medium text-blue-800 hover:underline ml-1">
+                          Developer Dashboard
+                        </a>
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Headers */}
+              {/* Headers */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Headers
+                  </label>
+                  <button
+                    onClick={() => copyToClipboard(headers)}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    📋 Copy
+                  </button>
+                </div>
+                <textarea
+                  value={headers}
+                  onChange={(e) => setHeaders(e.target.value)}
+                  className="w-full h-24 p-3 border border-gray-300 rounded-lg font-mono text-sm"
+                  placeholder="Enter headers as JSON"
+                />
+                {!validateJson(headers) && headers.trim() && (
+                  <p className="text-red-500 text-xs mt-1">Invalid JSON format</p>
+                )}
+              </div>
+
+              {/* Request Body */}
+              {selectedEndpoint.method !== 'GET' && (
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-semibold text-gray-700">
-                      Headers
+                    <label className="block text-sm font-medium text-gray-700">
+                      Request Body
                     </label>
                     <button
-                      onClick={() => copyToClipboard(headers)}
-                      className="text-xs text-blue-600 hover:text-blue-800 hover:scale-105 transition-all duration-200"
+                      onClick={() => copyToClipboard(requestBody)}
+                      className="text-xs text-blue-600 hover:text-blue-800"
                     >
                       📋 Copy
                     </button>
                   </div>
                   <textarea
-                    value={headers}
-                    onChange={(e) => setHeaders(e.target.value)}
-                    className="w-full h-24 p-3 border border-gray-300/50 rounded-xl font-mono text-sm
-                               bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 
-                               focus:ring-blue-500 focus:border-transparent transition-all duration-200
-                               shadow-lg shadow-gray-200/50"
-                    placeholder="Enter headers as JSON"
+                    value={requestBody}
+                    onChange={(e) => setRequestBody(e.target.value)}
+                    className="w-full h-48 p-3 border border-gray-300 rounded-lg font-mono text-sm"
+                    placeholder="Enter request body as JSON"
                   />
-                  {!validateJson(headers) && headers.trim() && (
-                    <p className="text-red-500 text-xs mt-1 font-medium">Invalid JSON format</p>
+                  {!validateJson(requestBody) && requestBody.trim() && (
+                    <p className="text-red-500 text-xs mt-1">Invalid JSON format</p>
                   )}
                 </div>
-
-                {/* Request Body */}
-                {selectedEndpoint.method !== 'GET' && (
-                  <div className="mb-6">
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-semibold text-gray-700">
-                        Request Body
-                      </label>
-                      <button
-                        onClick={() => copyToClipboard(requestBody)}
-                        className="text-xs text-blue-600 hover:text-blue-800 hover:scale-105 transition-all duration-200"
-                      >
-                        📋 Copy
-                      </button>
-                    </div>
-                    <textarea
-                      value={requestBody}
-                      onChange={(e) => setRequestBody(e.target.value)}
-                      className="w-full h-48 p-3 border border-gray-300/50 rounded-xl font-mono text-sm
-                                 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 
-                                 focus:ring-blue-500 focus:border-transparent transition-all duration-200
-                                 shadow-lg shadow-gray-200/50"
-                      placeholder="Enter request body as JSON"
-                    />
-                    {!validateJson(requestBody) && requestBody.trim() && (
-                      <p className="text-red-500 text-xs mt-1 font-medium">Invalid JSON format</p>
-                    )}
-                  </div>
-                )}
+              )}
 
                 {/* Execute Button */}
                 <button
@@ -588,8 +659,8 @@ export default function ApiPlaygroundPage() {
                   disabled={isLoading || 
                     !validateJson(headers) || 
                     (selectedEndpoint.method !== 'GET' && !validateJson(requestBody))}
-                  className={`group w-full relative overflow-hidden py-4 px-6 rounded-2xl font-bold text-lg
-                             transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-[1.02]
+                  className={`group w-full relative overflow-hidden py-4 px-6 rounded-xl font-semibold 
+                             transition-all duration-300 shadow-lg hover:shadow-xl 
                              ${isLoading || 
                                !validateJson(headers) || 
                                (selectedEndpoint.method !== 'GET' && !validateJson(requestBody))
@@ -620,10 +691,11 @@ export default function ApiPlaygroundPage() {
                 </button>
               </div>
             </div>
+            </div>
 
             {/* Right - Response */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-slate-100 
-                            border border-slate-200/50 rounded-3xl p-6 shadow-2xl shadow-slate-200/50">
+            <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-gray-100 
+                            border border-slate-200/50 rounded-2xl p-6 shadow-xl shadow-slate-200/50">
               {/* Background decoration */}
               <div className="absolute inset-0 bg-gradient-to-br from-slate-500/5 to-gray-500/5" />
               <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-slate-400/10 to-gray-400/10 
@@ -631,12 +703,12 @@ export default function ApiPlaygroundPage() {
               
               <div className="relative z-10">
                 <div className="flex items-center space-x-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-gray-700 rounded-2xl 
-                                  flex items-center justify-center shadow-xl shadow-gray-500/25">
+                  <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-gray-700 rounded-xl 
+                                  flex items-center justify-center shadow-lg">
                     <CommandLineIcon className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-xl font-semibold text-gray-900">
                       Response
                     </h2>
                     <p className="text-sm text-gray-600">
@@ -646,36 +718,36 @@ export default function ApiPlaygroundPage() {
                 </div>
 
                 {response ? (
-                  <div className="space-y-4 animate-fade-in">
+                  <div className="space-y-4 animate-slide-up">
                     {/* Response Metadata */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-2 px-3 py-2 bg-green-100 rounded-xl shadow-md">
+                        <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 rounded-lg">
                           <ClockIcon className="w-4 h-4 text-green-600" />
-                          <span className="text-sm font-semibold text-green-700">{responseTime}ms</span>
+                          <span className="text-sm font-medium text-green-700">{responseTime}ms</span>
                         </div>
-                        <div className="flex items-center space-x-2 px-3 py-2 bg-blue-100 rounded-xl shadow-md">
+                        <div className="flex items-center space-x-2 px-3 py-1 bg-blue-100 rounded-lg">
                           <ArchiveBoxIcon className="w-4 h-4 text-blue-600" />
-                          <span className="text-sm font-semibold text-blue-700">{(responseSize / 1024).toFixed(2)} KB</span>
+                          <span className="text-sm font-medium text-blue-700">{(responseSize / 1024).toFixed(2)} KB</span>
                         </div>
                       </div>
                       
                       {/* Status indicator */}
                       <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-lg shadow-green-500/50"></div>
-                        <span className="text-sm text-gray-600 font-medium">Live Response</span>
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-sm text-gray-600">Live Response</span>
                       </div>
                     </div>
                     
                     {/* Response Content */}
-                    <div className="bg-gray-900 rounded-2xl p-4 shadow-2xl border border-gray-800">
+                    <div className="bg-gray-900 rounded-xl p-4 shadow-xl border border-gray-800">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 bg-red-500 rounded-full shadow-lg"></div>
-                          <div className="w-3 h-3 bg-yellow-500 rounded-full shadow-lg"></div>
-                          <div className="w-3 h-3 bg-green-500 rounded-full shadow-lg"></div>
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                         </div>
-                        <span className="text-xs text-gray-400 font-medium">Response Data</span>
+                        <span className="text-xs text-gray-400">Response Data</span>
                       </div>
                       <div className="overflow-auto max-h-80">
                         <pre className="text-green-400 font-mono text-sm whitespace-pre-wrap leading-relaxed">
@@ -689,127 +761,123 @@ export default function ApiPlaygroundPage() {
                       onClick={() => copyToClipboard(response)}
                       className="group w-full flex items-center justify-center space-x-2 py-3 px-4 
                                  bg-white/60 backdrop-blur-sm hover:bg-white/80 text-gray-700 hover:text-gray-900 
-                                 rounded-2xl border border-white/40 hover:border-gray-300 
-                                 transition-all duration-200 hover:shadow-lg transform hover:scale-[1.02]"
+                                 rounded-xl border border-white/40 hover:border-gray-300 
+                                 transition-all duration-200 hover:shadow-md"
                     >
                       <DocumentDuplicateIcon className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
-                      <span className="font-semibold">Copy Response</span>
+                      <span className="font-medium">Copy Response</span>
                     </button>
                   </div>
                 ) : (
                   <div className="text-center py-16">
-                    <div className="w-16 h-16 bg-gradient-to-br from-gray-400 to-slate-500 rounded-3xl 
-                                    flex items-center justify-center mx-auto mb-4 opacity-60 shadow-xl">
+                    <div className="w-16 h-16 bg-gradient-to-br from-gray-400 to-slate-500 rounded-2xl 
+                                    flex items-center justify-center mx-auto mb-4 opacity-60">
                       <CommandLineIcon className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-700 mb-2">Ready to Execute</h3>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">Ready to Execute</h3>
                     <p className="text-gray-500">Execute a request to see the response here</p>
                   </div>
                 )}
+
+                {/* Response Info */}
+                <div className="mt-6 bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-white/40">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <InformationCircleIcon className="w-5 h-5 text-blue-600" />
+                    <h3 className="font-semibold text-blue-900">
+                      Response Information
+                    </h3>
+                  </div>
+                  <ul className="text-sm text-blue-800 space-y-2">
+                    <li className="flex items-center space-x-2">
+                      <CheckCircleIcon className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                      <span>Response time and size are displayed</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <CheckCircleIcon className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                      <span>All responses include HTTP status codes</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <CheckCircleIcon className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                      <span>JSON responses are automatically formatted</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <CheckCircleIcon className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                      <span>Copy response button for easy sharing</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
+            </div>
             </div>
           </div>
 
-          {/* Bottom Section - Quick Examples */}
-          <div className="mt-12 relative overflow-hidden bg-gradient-to-br from-white to-indigo-50 
-                          border border-indigo-200/50 rounded-3xl p-8 shadow-2xl shadow-indigo-200/50">
-            {/* Background decoration */}
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/10" />
-            <div className="absolute -top-12 -right-12 w-48 h-48 bg-gradient-to-br from-indigo-400/10 to-purple-400/10 
-                            rounded-full blur-3xl" />
-            
-            <div className="relative z-10">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  🚀 Common Usage Examples
-                </span>
-              </h2>
+          {/* Bottom Section - Examples and Documentation */}
+          <div className="mt-12 bg-white rounded-lg shadow-md p-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">
+              📚 Common Usage Examples
+            </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="group relative overflow-hidden bg-white/60 backdrop-blur-sm border border-white/40 
-                                rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/10" />
-                  <div className="relative z-10">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">
-                      1. Create Smart Account
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                      Generate a deterministic smart account address for a user's EOA.
-                    </p>
-                    <button
-                      onClick={() => handleEndpointChange(API_ENDPOINTS[2])}
-                      className="group text-blue-600 hover:text-blue-800 text-sm font-semibold 
-                                 flex items-center space-x-2 transition-colors duration-200"
-                    >
-                      <span>Try Example</span>
-                      <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="group relative overflow-hidden bg-white/60 backdrop-blur-sm border border-white/40 
-                                rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/10" />
-                  <div className="relative z-10">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">
-                      2. Execute Transaction
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                      Send a gasless transaction using the smart account.
-                    </p>
-                    <button
-                      onClick={() => handleEndpointChange(API_ENDPOINTS[6])}
-                      className="group text-green-600 hover:text-green-800 text-sm font-semibold 
-                                 flex items-center space-x-2 transition-colors duration-200"
-                    >
-                      <span>Try Example</span>
-                      <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="group relative overflow-hidden bg-white/60 backdrop-blur-sm border border-white/40 
-                                rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-violet-500/10" />
-                  <div className="relative z-10">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg">
-                      3. Session Management
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                      Create session keys with spending limits for one-click UX.
-                    </p>
-                    <button
-                      onClick={() => handleEndpointChange(API_ENDPOINTS[3])}
-                      className="group text-purple-600 hover:text-purple-800 text-sm font-semibold 
-                                 flex items-center space-x-2 transition-colors duration-200"
-                    >
-                      <span>Try Example</span>
-                      <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
-                    </button>
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  1. Create Smart Account
+                </h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Generate a deterministic smart account address for a user's EOA.
+                </p>
+                <button
+                  onClick={() => handleEndpointChange(API_ENDPOINTS[0])}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  Try Example →
+                </button>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-indigo-200/50 text-center">
-                <p className="text-sm text-gray-600 mb-4">
-                  Need help? Check out the full API documentation or contact support.
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  2. Execute Transaction
+                </h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Send a gasless transaction using the smart account.
                 </p>
-                <div className="flex justify-center gap-4">
-                  <a 
-                    href="/api-docs"
-                    className="group px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white 
-                               rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200
-                               shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold"
-                  >
-                    📖 API Docs
-                  </a>
-                  <button className="group px-6 py-3 bg-white/60 backdrop-blur-sm text-gray-700 
-                                     rounded-xl hover:bg-white/80 transition-all duration-200
-                                     border border-white/40 hover:border-gray-300
-                                     shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold">
-                    💬 Support
-                  </button>
-                </div>
+                <button
+                  onClick={() => handleEndpointChange(API_ENDPOINTS[4])}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  Try Example →
+                </button>
+              </div>
+
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  3. Batch Transactions
+                </h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Execute multiple transactions in a single batch for efficiency.
+                </p>
+                <button
+                  onClick={() => handleEndpointChange(API_ENDPOINTS[5])}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  Try Example →
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+              <p className="text-sm text-gray-500 mb-4">
+                Need help? Check out the full API documentation or contact support.
+              </p>
+              <div className="flex justify-center gap-4">
+                <a 
+                  href="/api-docs"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  📖 API Docs
+                </a>
+                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                  💬 Support
+                </button>
               </div>
             </div>
           </div>

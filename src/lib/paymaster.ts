@@ -59,7 +59,7 @@ export async function executeTransaction(request: TransactionRequest): Promise<T
 }
 
 async function executeSafeTransaction(request: TransactionRequest): Promise<TransactionResult> {
-  const { action, sessionKey, userAddress } = request;
+  const { to, data, value, sessionKey, userAddress } = request;
   
   // Get smart account address
   const smartAccount = await getSafeAccount({
@@ -83,9 +83,9 @@ async function executeSafeTransaction(request: TransactionRequest): Promise<Tran
   const txHash = await executeSafeTx(
     smartAccount.address,
     sessionKey,
-    getTargetContract(action),
-    '0',
-    getActionData(action)
+    to,
+    value,
+    data
   );
   
   return {
@@ -95,7 +95,7 @@ async function executeSafeTransaction(request: TransactionRequest): Promise<Tran
 }
 
 async function executeAlchemyTransaction(request: TransactionRequest): Promise<TransactionResult> {
-  const { action, sessionKey, userAddress } = request;
+  const { to, data, value, sessionKey, userAddress } = request;
   
   // Get smart account address
   const smartAccount = await getAlchemyAccount({
@@ -119,9 +119,9 @@ async function executeAlchemyTransaction(request: TransactionRequest): Promise<T
   const txHash = await executeAlchemyTx(
     smartAccount.address,
     sessionKey,
-    getTargetContract(action),
-    '0',
-    getActionData(action)
+    to,
+    value,
+    data
   );
   
   return {
@@ -131,7 +131,7 @@ async function executeAlchemyTransaction(request: TransactionRequest): Promise<T
 }
 
 async function executeBiconomyTransaction(request: TransactionRequest): Promise<TransactionResult> {
-  const { action, sessionKey, userAddress } = request;
+  const { to, data, value, sessionKey, userAddress } = request;
   
   // Get smart account address
   const smartAccount = await getBiconomyAccount({
@@ -155,9 +155,9 @@ async function executeBiconomyTransaction(request: TransactionRequest): Promise<
   const txHash = await executeBiconomyTx(
     smartAccount.address,
     sessionKey,
-    getTargetContract(action),
-    '0',
-    getActionData(action)
+    to,
+    value,
+    data
   );
   
   return {
